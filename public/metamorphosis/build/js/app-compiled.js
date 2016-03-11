@@ -2,54 +2,194 @@
 
 	var anguNg = ['ngAria', 'ngSanitize', 'ngAnimate', 'ngMessages', 'ngNotify'];
 	var anguEx = ['ui.bootstrap', 'mgcrea.ngStrap', 'angularMoment', 'bootstrapLightbox'];
-	var routerCtrl = ['appname.router', 'appname.ctrl'];
-	var cons = ['appname.constant'];
-	var serv = ['appname.sig.service', 'appname.service'];
-	var dir = ['appname.dir', 'appname.cust.dir'];
+	var routerCtrl = ['storyApp.router', 'storyApp.ctrl'];
+	var cons = ['storyApp.constant'];
+	var serv = ['storyApp.sig.service', 'storyApp.service'];
+	var facy = ['storyApp.auth.factory', 'storyApp.func.factory', 'storyApp.signUp.factory'];
+	var dir = ['storyApp.dir', 'storyApp.cust.dir'];
 
-	var depedencyArr = anguNg.concat(anguEx, routerCtrl, cons, serv, dir);
+	var depedencyArr = anguNg.concat(anguEx, routerCtrl, cons, serv, facy, dir);
 	/**
-	* appname Module
+	* storyApp Module
 	*
 	* The main module of this application...
 	*/
-	angular.module('appname', depedencyArr);
+	angular.module('storyApp', depedencyArr);
 
-	angular.module('appname.router', ['ui.router']);
-	angular.module('appname.constant', []);
-	angular.module('appname.sig.service', []);
-	angular.module('appname.service', []);
-	angular.module('appname.ctrl', []);
-	angular.module('appname.dir', ['appname.service', 'appname.sig.service']);
-	angular.module('appname.cust.dir', ['appname.service', 'appname.sig.service']);
-
-})();
-(function () {
-	var rM = angular.module('appname.router');
-
-	// rM
+	angular.module('storyApp.router', ['ui.router']);
+	angular.module('storyApp.constant', []);
+	angular.module('storyApp.sig.service', []);
+	angular.module('storyApp.service', []);
+	angular.module('storyApp.auth.factory', []);
+	angular.module('storyApp.func.factory', []);
+	angular.module('storyApp.signUp.factory', []);
+	angular.module('storyApp.ctrl', ['storyApp.auth.factory', 'storyApp.signUp.factory']);
+	angular.module('storyApp.dir', ['storyApp.service', 'storyApp.sig.service']);
+	angular.module('storyApp.cust.dir', ['storyApp.service', 'storyApp.sig.service']);
 
 })();
 (function () {
-	var cosM = angular.module('appname.constant');
+	var rM = angular.module('storyApp.router');
+
+	rM.config(['$stateProvider', '$urlRouterProvider',function($stateProvider, $urlRouterProvider) {
+		$urlRouterProvider.otherwise('/');
+
+		$stateProvider
+		.state('home', {
+			url: '/',
+			templateUrl: './_partials/home.html',
+			controller: 'navbarCtrl'
+		})
+		.state('loginPage', {
+			url: '/login',
+			templateUrl: './_partials/login.html',
+			controller: 'loginCtrl'
+		});
+
+	}]);
 
 })();
 (function () {
-	var ctrlM = angular.module('appname.ctrl');
-
-	// ctrlM
+	var cosM = angular.module('storyApp.constant');
 
 })();
 (function () {
-	var cdM = angular.module('appname.cust.dir');
+	var ctrlM = angular.module('storyApp.ctrl');
+
+	ctrlM.controller('navbarCtrl', ['$rootScope', '$state', 'Auth', function($rootScope, $state, Auth){
+		console.log('navbarCtrl');
+		var vm = this;
+	}]);
+
+})();
+(function () {
+	var cdM = angular.module('storyApp.cust.dir');
 
 	// cdM
 
 })();
 (function () {
-	var dM = angular.module('appname.dir');
+	var dM = angular.module('storyApp.dir');
 
 	// dM
+
+})();
+(function () {
+	var authM = angular.module('storyApp.auth.factory');
+
+	authM.factory('Auth', ['$http', '$q', 'AuthToken', function($http, $q, AuthToken){
+		var authenticatedFactory = {};
+
+		authenticatedFactory.login = function (uname, pswd) {
+			var loginUserObj = {
+				username: uname,
+				password: pswd
+			};
+			var loginResult = $http.post('/api/login', loginUserObj)
+				.success(function (data) {
+					console.log('authenticatedFactory line 14 loginResult: ', data);
+					var loggedInToken = data.token;
+					AuthToken.setToken(loggedInToken);
+					return data;
+				})
+				.error(function(data, config, status) {
+					console.log('auth factory -- error data: ', data);
+					var failLoginMsg = {
+						message: "Canot login due to STATUS: "+status+" - Config: "+config
+					};
+					return failLoginMsg;
+				});
+		};
+
+		authenticatedFactory.logout = function () {
+			AuthToken.setToken();
+		};
+
+		authenticatedFactory.isLoggedInMiddleWareFrontEnd = function () {
+			var hasToken = AuthToken.getToken();
+			console.log('auth factory line 33 -- hasToken: '+hasToken);
+			if (hasToken) {
+				return true;
+			} else {
+				return false;
+			}
+		};
+
+		authenticatedFactory.getLoggedInUserInfo = function () {
+			var hasToken = AuthToken.getToken();
+			if (hasToken) {
+				var receivedUserInfo = $http.get('/api/curuser');
+				return receivedUserInfo;
+			} else {
+				var noTokenMsg = {
+					message: "This User has no Token."
+				}
+				return noTokenMsg;
+			}
+		};
+
+		return authenticatedFactory;
+
+	}]);
+
+	authM.factory('AuthToken', ['$window', function($window){
+		var authHandleTokenFactory = {};
+		var tk = 'token';
+
+		authHandleTokenFactory.getToken = function () {
+			var theToken = $window.localStorage.getItem(tk);
+			console.log('AuthToken factory line 64 theToken is: ', theToken);
+			return theToken;
+		}
+
+		authHandleTokenFactory.setToken = function (passedInToken) {
+			if (passedInToken) {
+				$window.localStorage.setItem(tk, passedInToken);
+			} else {
+				$window.localStorage.removeItem(tk);
+			}
+		};
+
+		return authHandleTokenFactory;
+	}]);
+
+	authM.factory('AuthInterceptor', ['$q', '$location', 'AuthToken', function($q, $location, AuthToken){
+		var interceptorFactory = {};
+		var token = AuthToken.getToken();
+
+		interceptorFactory.request = function (config) {
+			if (token) {
+				config.headers['x-access-token'] = token;
+			} else {
+				return config;
+			}
+		};
+
+		interceptorFactory.responseError = function (response) {
+			if (response.status === 403) {
+				console.log('auth interceptorFactory line 93 -- status: '+response.status);
+				$location.path('/login');
+			} else {
+				console.log('auth interceptorFactory line 96 -- status: '+response.status);
+				return $q.reject(response);
+			}
+		};
+
+		return interceptorFactory;
+
+	}]);
+
+})();
+(function () {
+	var funcM = angular.module('storyApp.func.factory');
+
+	// funcM
+
+})();
+(function () {
+	var signupM = angular.module('storyApp.signUp.factory');
+
+	// signupM
 
 })();
 // service js Document
@@ -93,7 +233,7 @@
 
 	}]);*/
 (function () {
-	var sM = angular.module('appname.service');
+	var sM = angular.module('storyApp.service');
 
 	// sM
 
@@ -119,7 +259,7 @@
 
 }]);*/
 (function () {
-	var ssM = angular.module('appname.sig.service');
+	var ssM = angular.module('storyApp.sig.service');
 
 	// ssM
 

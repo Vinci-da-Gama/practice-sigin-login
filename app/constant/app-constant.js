@@ -1,4 +1,4 @@
 (function () {
-	var cosM = angular.module('appname.constant');
+	var cosM = angular.module('storyApp.constant');
 
 })();

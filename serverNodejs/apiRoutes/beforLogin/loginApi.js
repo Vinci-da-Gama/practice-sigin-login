@@ -11,20 +11,20 @@ routerLogin.post('/login', function (req, res) {
 	var userName = {
 		username: req.body.username
 	};
-	User.findOne(userName).select('password').exec(function (err, thisUser) {
+	User.findOne(userName).select('name username password').exec(function (err, loggingUser) {
 		// if has error.
 		if (err) {
 			throw err;
 		} else {
 			// if this user doesnot exist.
-			if (!thisUser) {
+			if (!loggingUser) {
 				var noThisUser = {
 					message: msg.noUserMsg
 				};
 				res.send(noThisUser);
-			} else if (thisUser) {
+			} else if (loggingUser) {
 				var inputPassword = req.body.password;
-				var validPasswordBool = thisUser.comparePassword(inputPassword);
+				var validPasswordBool = loggingUser.comparePassword(inputPassword);
 				// match password
 				if (!validPasswordBool) {
 					var invalidPwMsg = {
@@ -32,13 +32,13 @@ routerLogin.post('/login', function (req, res) {
 					};
 					res.send(invalidPwMsg);
 				} else {
-					var token = creatToken(thisUser);
-					var loginSuccessObj = {
+					var token = creatToken(loggingUser);
+					var loginSuccessResponseObj = {
 						success: true,
 						message: msg.loginSuccessMsg,
 						token: token
 					};
-					res.json(loginSuccessObj);
+					res.json(loginSuccessResponseObj);
 				}
 			} else {
 				var unknownMsg = {

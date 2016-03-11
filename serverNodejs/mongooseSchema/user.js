@@ -33,10 +33,10 @@ userSchema.pre('save', function (next) {
 });
 
 // whether password matched function
-userSchema.methods.comparePassword = function (currPassword) {
+userSchema.methods.comparePassword = function (receivedUserInputedPassword) {
 	var theUser = this;
-	// var passwordMatchedBool = bcrypt.compareSync(currPassword, theUser.password);
-	return bcrypt.compareSync(currPassword, theUser.password);
+	var passwordMatchedBool = bcrypt.compareSync(receivedUserInputedPassword, theUser.password);
+	return passwordMatchedBool;
 };
 
 module.exports = mongoose.model('User', userSchema);

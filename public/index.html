@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html ng-app="appname">
+<html ng-app="storyApp">
 <head>
 	<!-- Browser and Mobile -->
 	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>appname</title>
+	<title>storyApp</title>
 	<!-- tab-icon -->
 	<link rel="icon" href="./metamorphosis/_img/test.png" type="image/x-icon">
 	<!-- minify lib css -->
@@ -19,10 +19,41 @@
 
 </head>
 <body class="basictorso">
-	<div>appname</div>
-	<div>haha<span class="glyphicon glyphicon-heart"></span></div>
-	<img src="./metamorphosis/_img/test.png" alt="test...">
-	<button type="button" class="btn btn-info">info_BTN</button>
+	<header ng-controller="navbarCtrl as nvb">
+		<div class="navbar navbar-default" role="navigation">
+			<div class="container-fluid">
+				<!-- Brand and toggle get grouped for better mobile display -->
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".storyapp-collapse-navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" ui-sref="home">Story &#128218; APP</a>
+				</div>
+		
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse navbar-collapse storyapp-collapse-navbar">
+					<ul class="nav navbar-nav navbar-right">
+						<li ng-if="!nvb.isloggedIn">
+							<a ui-sref="loginPage">Login</a>
+						</li>
+						<li ng-if="!nvb.isloggedIn">
+							<a ui-sref="home">Signup</a>
+						</li>
+						<li ng-if="nvb.isloggedIn">
+							<a ui-sref="home">Hello User: {{nvbar.user.username}}</a>
+						</li>
+						<li ng-if="nvb.isloggedIn">
+							<a ng-click="nvb.logout()">LogOut</a>
+						</li>
+					</ul>
+				</div><!-- /.navbar-collapse -->
+			</div>
+		</div>
+	</header>
+	<div ui-view></div>
 </body>
 <!-- compiled-app-js -->
 <script type="text/javascript" language="javascript" src="./metamorphosis/build/js/app-compiled.js"></script>

@@ -1,5 +1,5 @@
 (function () {
-	var dM = angular.module('appname.dir');
+	var dM = angular.module('storyApp.dir');
 
 	// dM
 

@@ -1,6 +1,9 @@
 (function () {
-	var ctrlM = angular.module('appname.ctrl');
+	var ctrlM = angular.module('storyApp.ctrl');
 
-	// ctrlM
+	ctrlM.controller('navbarCtrl', ['$rootScope', '$state', 'Auth', function($rootScope, $state, Auth){
+		console.log('navbarCtrl');
+		var vm = this;
+	}]);
 
 })();

@@ -2,25 +2,29 @@
 
 	var anguNg = ['ngAria', 'ngSanitize', 'ngAnimate', 'ngMessages', 'ngNotify'];
 	var anguEx = ['ui.bootstrap', 'mgcrea.ngStrap', 'angularMoment', 'bootstrapLightbox'];
-	var routerCtrl = ['appname.router', 'appname.ctrl'];
-	var cons = ['appname.constant'];
-	var serv = ['appname.sig.service', 'appname.service'];
-	var dir = ['appname.dir', 'appname.cust.dir'];
+	var routerCtrl = ['storyApp.router', 'storyApp.ctrl'];
+	var cons = ['storyApp.constant'];
+	var serv = ['storyApp.sig.service', 'storyApp.service'];
+	var facy = ['storyApp.auth.factory', 'storyApp.func.factory', 'storyApp.signUp.factory'];
+	var dir = ['storyApp.dir', 'storyApp.cust.dir'];
 
-	var depedencyArr = anguNg.concat(anguEx, routerCtrl, cons, serv, dir);
+	var depedencyArr = anguNg.concat(anguEx, routerCtrl, cons, serv, facy, dir);
 	/**
-	* appname Module
+	* storyApp Module
 	*
 	* The main module of this application...
 	*/
-	angular.module('appname', depedencyArr);
+	angular.module('storyApp', depedencyArr);
 
-	angular.module('appname.router', ['ui.router']);
-	angular.module('appname.constant', []);
-	angular.module('appname.sig.service', []);
-	angular.module('appname.service', []);
-	angular.module('appname.ctrl', []);
-	angular.module('appname.dir', ['appname.service', 'appname.sig.service']);
-	angular.module('appname.cust.dir', ['appname.service', 'appname.sig.service']);
+	angular.module('storyApp.router', ['ui.router']);
+	angular.module('storyApp.constant', []);
+	angular.module('storyApp.sig.service', []);
+	angular.module('storyApp.service', []);
+	angular.module('storyApp.auth.factory', []);
+	angular.module('storyApp.func.factory', []);
+	angular.module('storyApp.signUp.factory', []);
+	angular.module('storyApp.ctrl', ['storyApp.auth.factory', 'storyApp.signUp.factory']);
+	angular.module('storyApp.dir', ['storyApp.service', 'storyApp.sig.service']);
+	angular.module('storyApp.cust.dir', ['storyApp.service', 'storyApp.sig.service']);
 
 })();
