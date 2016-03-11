@@ -36,17 +36,17 @@
 				<!-- Collect the nav links, forms, and other content for toggling -->
 				<div class="collapse navbar-collapse storyapp-collapse-navbar">
 					<ul class="nav navbar-nav navbar-right">
-						<li ng-if="!nvb.isloggedIn">
+						<li ng-if="!nvb.didLoggedIn">
 							<a ui-sref="loginPage">Login</a>
 						</li>
-						<li ng-if="!nvb.isloggedIn">
+						<li ng-if="!nvb.didLoggedIn">
 							<a ui-sref="home">Signup</a>
 						</li>
-						<li ng-if="nvb.isloggedIn">
+						<li ng-if="nvb.didLoggedIn">
 							<a ui-sref="home">Hello User: {{nvbar.user.username}}</a>
 						</li>
-						<li ng-if="nvb.isloggedIn">
-							<a ng-click="nvb.logout()">LogOut</a>
+						<li ng-if="nvb.didLoggedIn">
+							<a ng-click="nvb.navLogout()">LogOut</a>
 						</li>
 					</ul>
 				</div><!-- /.navbar-collapse -->

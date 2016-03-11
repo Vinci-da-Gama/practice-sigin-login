@@ -59,6 +59,62 @@
 	ctrlM.controller('navbarCtrl', ['$rootScope', '$state', 'Auth', function($rootScope, $state, Auth){
 		console.log('navbarCtrl');
 		var vm = this;
+		vm.didLoggedIn = Auth.isLoggedInMiddleWareFrontEnd();
+
+		$rootScope.$on('$stateChangeStart', function () {
+			vm.didLoggedIn = Auth.isLoggedInMiddleWareFrontEnd();
+			Auth.getLoggedInUserInfo()
+			.then(function (data) {
+				console.log('13 -- navbarCtrl getLoggedInUserInfo is: ', data);
+				vm.user = data.data;
+			});
+
+		});
+
+		$rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
+			console.log('32 $stateChangeSuccess event: ', event);
+			console.log('33 $stateChangeSuccess toState: ', toState);
+			console.log('34 $stateChangeSuccess toParams: ', toParams);
+			console.log('35 $stateChangeSuccess fromState: ', fromState);
+			console.log('36 $stateChangeSuccess fromParams: ', fromParams);
+			console.log('37 $stateChangeSuccess error: ', error);
+		});
+
+		vm.navLogout = function () {
+			Auth.logout();
+			// $state.go('home');
+			$state.reload();
+			console.log('31 -- Did Logout.');
+		};
+
+	}]);
+
+	ctrlM.controller('loginCtrl', ['$state', 'Auth', function($state, Auth){
+		var vm = this;
+
+		vm.doLogin = function () {
+			vm.error = '';
+			vm.processing = true;
+
+			Auth.login(vm.loginData.username, vm.loginData.password)
+			.success(function (loginResponse) {
+				vm.processing = false;
+				Auth.getLoggedInUserInfo()
+				.then(function (data) {
+					console.log('48 -- loginCtrl getLoggedInUserInfo data :', data);
+					vm.user = data.data;
+				});
+
+				if (loginResponse.success) {
+					$state.go('home');
+				} else {
+					vm.error = loginResponse.message;
+				}
+
+			});
+
+		};
+
 	}]);
 
 })();
@@ -86,19 +142,22 @@
 				password: pswd
 			};
 			var loginResult = $http.post('/api/login', loginUserObj)
-				.success(function (data) {
-					console.log('authenticatedFactory line 14 loginResult: ', data);
-					var loggedInToken = data.token;
-					AuthToken.setToken(loggedInToken);
-					return data;
-				})
-				.error(function(data, config, status) {
-					console.log('auth factory -- error data: ', data);
-					var failLoginMsg = {
-						message: "Canot login due to STATUS: "+status+" - Config: "+config
-					};
-					return failLoginMsg;
-				});
+			.success(function (data) {
+				console.log('authenticatedFactory line 14 loginResult: ', data);
+				var loggedInToken = data.token;
+				AuthToken.setToken(loggedInToken);
+				return data;
+			})
+			.error(function(data, config, status) {
+				console.log('auth factory -- error data: ', data);
+				var failLoginMsg = {
+					message: "Canot login due to STATUS: "+status+" - Config: "+config
+				};
+				return failLoginMsg;
+			});
+
+			return loginResult;
+
 		};
 
 		authenticatedFactory.logout = function () {
@@ -107,7 +166,6 @@
 
 		authenticatedFactory.isLoggedInMiddleWareFrontEnd = function () {
 			var hasToken = AuthToken.getToken();
-			console.log('auth factory line 33 -- hasToken: '+hasToken);
 			if (hasToken) {
 				return true;
 			} else {
@@ -123,8 +181,8 @@
 			} else {
 				var noTokenMsg = {
 					message: "This User has no Token."
-				}
-				return noTokenMsg;
+				};
+				return $q.reject(noTokenMsg);
 			}
 		};
 
@@ -138,7 +196,6 @@
 
 		authHandleTokenFactory.getToken = function () {
 			var theToken = $window.localStorage.getItem(tk);
-			console.log('AuthToken factory line 64 theToken is: ', theToken);
 			return theToken;
 		}
 
@@ -155,9 +212,9 @@
 
 	authM.factory('AuthInterceptor', ['$q', '$location', 'AuthToken', function($q, $location, AuthToken){
 		var interceptorFactory = {};
-		var token = AuthToken.getToken();
 
 		interceptorFactory.request = function (config) {
+			var token = AuthToken.getToken();
 			if (token) {
 				config.headers['x-access-token'] = token;
 			} else {
@@ -167,10 +224,13 @@
 
 		interceptorFactory.responseError = function (response) {
 			if (response.status === 403) {
-				console.log('auth interceptorFactory line 93 -- status: '+response.status);
-				$location.path('/login');
+				console.log('auth interceptorFactory line 97 -- status: '+response.status);
+				$state.go('home');
+			} else if(response.status === 401) {
+				console.log('line 100 AuthInterceptor Unauthorized User.');
+				$state.reload();
 			} else {
-				console.log('auth interceptorFactory line 96 -- status: '+response.status);
+				console.log('reject response.');
 				return $q.reject(response);
 			}
 		};
